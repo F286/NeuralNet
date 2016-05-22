@@ -23,9 +23,9 @@ namespace NeuralNet
 
             // we convert each kernel into a column (tall 9)
             // so the convolution would have to be 'n' rows with length 9
-            var conv1 = new DenseMatrix(2, 9);
+            var conv1 = new DenseMatrix(1, 9);
             conv1[0, 1] = 0.5;
-            conv1[0, 4] = 0.5;
+            //conv1[0, 4] = 0.5;
 
             for (int i = 0; i < 1000; i++)
             {
@@ -39,7 +39,7 @@ namespace NeuralNet
                 Console.WriteLine("inputA_col " + inputA_col);
                 Console.WriteLine("features1_col " + features1_col);
                 Console.WriteLine("features1[0] " + features1[0]);
-                Console.WriteLine("features1[1] " + features1[1]);
+                //Console.WriteLine("features1[1] " + features1[1]);
 
                 var current = features1_col.RowSums()[0];
                 var error = 10 - current;
@@ -55,6 +55,8 @@ namespace NeuralNet
                 Console.WriteLine("conv1_localGradient " + conv1_localGradient);
 
                 broadcastAdd(conv1, conv1_localGradient * 0.001 * error);
+
+                Console.WriteLine(col2im(conv1_localGradient)[0]);
                 //for (int row = 0; row < conv1.RowCount; row++)
                 //{
                 //    for (int column = 0; column < conv1.ColumnCount; column++)
