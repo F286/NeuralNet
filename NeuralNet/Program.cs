@@ -17,12 +17,12 @@ namespace NeuralNet
             {
                 for (int column = 0; column < inputA.ColumnCount; column++)
                 {
-                    inputA[row, column] = column / 4f;
+                    inputA[row, column] = (column == 1 ? -1 : 1) * column / 4f;
                 }
             }
 
             // we convert each kernel into a column (tall 9)
-            // so the convolution would have to be 'n' rows with length 9
+            //// so the convolution would have to be 'n' rows with length 9
             var conv1 = new DenseMatrix(1, 9);
             conv1[0, 1] = 0.5;
             //conv1[0, 4] = 0.5;
@@ -31,7 +31,7 @@ namespace NeuralNet
             {
                 var inputA_col = im2col(inputA);
                 var features1_col = conv1 * inputA_col;
-                var features1 = col2im(features1_col);
+                var features1 = col2imSplit(features1_col);
                 //DenseMatrix m = new DenseMatrix(4, 4);
                 // DenseMatrix m2 = new DenseMatrix()
                 Console.WriteLine("inputA " + inputA);
@@ -40,6 +40,8 @@ namespace NeuralNet
                 Console.WriteLine("features1_col " + features1_col);
                 Console.WriteLine("features1[0] " + features1[0]);
                 //Console.WriteLine("features1[1] " + features1[1]);
+
+                Console.WriteLine("features1[0] col2im " + col2im(features1[0]) );
 
                 var current = features1_col.RowSums()[0];
                 var error = 10 - current;
@@ -56,7 +58,7 @@ namespace NeuralNet
 
                 broadcastAdd(conv1, conv1_localGradient * 0.001 * error);
 
-                Console.WriteLine(col2im(conv1_localGradient)[0]);
+                Console.WriteLine(col2imSplit(conv1_localGradient)[0]);
                 //for (int row = 0; row < conv1.RowCount; row++)
                 //{
                 //    for (int column = 0; column < conv1.ColumnCount; column++)
@@ -81,6 +83,9 @@ namespace NeuralNet
 
         static DenseMatrix im2col(DenseMatrix image)
         {
+            //image.row
+
+
             var r = new DenseMatrix(9, image.RowCount * image.ColumnCount);
 
             for (int column = 0; column < r.ColumnCount; column++)
@@ -101,7 +106,21 @@ namespace NeuralNet
 
             return r;
         }
-        static DenseMatrix[] col2im(DenseMatrix features)
+        static DenseMatrix col2im(DenseMatrix features)
+        {
+            var s = (int)(Math.Sqrt(features.ColumnCount) + 0.0001);
+            var returnValue = new DenseMatrix(s);
+
+            var v = features.ColumnSums();
+            for (int i = 0; i < v.Count; i++)
+            {
+                returnValue[i / s, i % s] = v[i];
+            }
+            //features.ColumnSums().ToRowMatrix().re
+
+            return returnValue;
+        }
+        static DenseMatrix[] col2imSplit(DenseMatrix features)
         {
             var returnValue = new DenseMatrix[features.RowCount];
             for (int featureIndex = 0; featureIndex < features.RowCount; featureIndex++)
